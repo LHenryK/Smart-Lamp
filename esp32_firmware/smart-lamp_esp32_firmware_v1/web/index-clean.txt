@@ -1,0 +1,80 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <title>Smart Lamp</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="./smart-lamp_web-style.css" />
+    <script src="./smart-lamp_web-script.js"></script>
+</head>
+
+<body>
+    <div class="wrapper">
+        <h1 class="title">Smart Lamp</h1>
+        <h1>%inpName$</h1>
+        <hr width="15%">
+        <h2>Color Mix</h2>
+
+        <div class="con ver">
+            <div class="box">
+                <form action="/get" target="hidden-form">
+                    <div class="con">
+                        Red:
+                        <input type="range" name="inputIntR" min="0" max="255" value="%inpR%" class="slider"
+                            onchange="this.form.submit();update()">
+                        %inputIntR%
+                    </div>
+                </form>
+            </div>
+            <div class="box">
+                <form action="/get" target="hidden-form">
+                    <div class="con">
+                        Green:
+                        <input type="range" name="inputIntG" min="0" max="255" value="%inpG%" class="slider"
+                            onchange="this.form.submit();update()">
+                        %inputIntG%
+                    </div>
+                </form>
+            </div>
+            <div class="box">
+                <form action="/get" target="hidden-form">
+                    <div class="con">
+                        Blue:
+                        <input type="range" name="inputIntB" min="0" max="255" value="%inpB%" class="slider"
+                            onchange="this.form.submit();update()">
+                        %inputIntB%
+                    </div>
+                </form>
+            </div>
+            <div class="box">
+                <form action="/get" target="hidden-form">
+                    <div class="con">
+                        Brightness:
+                        <input type="range" name="inputIntH" min="0" max="255" value="%inpH%" class="slider"
+                            onchange="this.form.submit();update()">
+                        %inputIntH%
+                    </div>
+                </form>
+            </div>
+        </div>
+        <hr width="30%">
+        <h2>LED Mode:</h2>
+        <form action="/get" target="hidden-form">
+            <select class="inp" name="selM" id="selM" onchange="this.form.submit();update()">
+                <option value="color">Color</option>
+                <option value="mqtt">MQTT</option>
+                <option value="party">Party</option>
+                <option value="anim">Animations</option>
+            </select>
+        </form>
+        <a class="btn" href="settings.html">Settings</a>
+        <hr width="70%">
+        <h4 style="margin: 0">Smart Lamp</h4>
+        <h4 style="margin: 0">Developed by Linus H. Kroog</h4>
+        <hr width="60%" style="margin-bottom: 8rem;">
+    </div>
+    <iframe style="display:none" name="hidden-form"></iframe>
+</body>
+
+</html>

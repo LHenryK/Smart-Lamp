@@ -1,0 +1,86 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <title>Smart Lamp</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="./smart-lamp_web-style.css" />
+    <script src="./smart-lamp_web-script.js"></script>
+</head>
+
+<body>
+    <div class="wrapper">
+        <h1 class="title">Smart Lamp</h1>
+        <h2>Settings</h2>
+        <hr width="15%">
+        <div class="container">
+            <h2>General:</h2>
+            <div class="box">
+                <form action="/get" target="hidden-form">
+                    Lamp name:
+                    <div>
+                        <input class="inp" type="text" name="%inpName%" value="%inpName%">
+                        <input class="inp" type="submit" value="Save" onclick="update()">
+                    </div>
+                </form>
+            </div>
+            <h2>WLAN:</h2>
+            <div class="box">
+                <form action="/get" target="hidden-form">
+                    Verbindungsstatus: %conSta% <br>
+                    SSID:
+                    <div>
+                        <input class="inp" type="text" name="%inpWSSID%" value="%inpWSSID%">
+                        <input class="inp" type="submit" value="Save" onclick="update()">
+                    </div>
+                </form>
+                <form action="/get" target="hidden-form">
+                    Passwort:
+                    <div>
+                        <input class="inp" type="text" name="%inpWPass%">
+                        <input class="inp" type="submit" value="Save" onclick="update()">
+                    </div>
+                </form>
+            </div>
+
+            <h2>Mqtt:</h2>
+            <div class="box">
+                <form action="/get" target="hidden-form">
+                    Broker IP:
+                    <div>
+                        <input class="inp" type="text" name="%inpBIP%" value="%inpBIP%">
+                        <input class="inp" type="submit" value="Save" onclick="update()">
+                    </div>
+                </form>
+                <form action="/get" target="hidden-form">
+                    Username:
+                    <div>
+                        <input class="inp" type="text" name="%inpBUser%" value="%inpBUser%">
+                        <input class="inp" type="submit" value="Save" onclick="update()">
+                    </div>
+                </form>
+                <form action="/get" target="hidden-form">
+                    Passwort:
+                    <div>
+                        <input class="inp" type="text" name="%inpBPass%">
+                        <input class="inp" type="submit" value="Save" onclick="update()">
+                    </div>
+                </form>
+            </div>
+            <h2>More:</h2>
+            <div class="box">
+                <a class="btn red" href="/restart">Restart</a>
+            </div>
+        </div>
+        <hr width="15%">
+        <a class="btn" href="index.html">Back</a>
+        <hr width="70%">
+        <h4 style="margin: 0">Smart Lamp</h4>
+        <h4 style="margin: 0">Developed by Linus H. Kroog</h4>
+        <hr width="60%" style="margin-bottom: 8rem;">
+    </div>
+    <iframe style="display:none" name="hidden-form"></iframe>
+</body>
+
+</html>
