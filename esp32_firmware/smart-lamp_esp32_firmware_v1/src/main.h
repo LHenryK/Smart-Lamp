@@ -1,4 +1,6 @@
 /*
+ * Smart Lamp - project
+ *
  * Author: Linus H. Kroog
  * E-Mail: linus.henry.kroog@bbs-winsen.de
  *
@@ -31,7 +33,7 @@ int rotaryForwardsPin = 2;
 int rotaryBackwardsPin = 4;
 int rotaryButtonPin = 27;
 
-long altePosition = -999;
+long altePosition = 0;
 
 RotaryEncoder encoder(rotaryBackwardsPin, rotaryForwardsPin, RotaryEncoder::LatchMode::TWO03);
 
@@ -70,7 +72,7 @@ bool isRotaryButtonHigh = false;
 
 //
 // SECTION: -- Network Varables --
-const char *apWifiSsid = "ESP Smart Lamp";
+const char *apWifiSsid = "Smart Lamp";
 
 String header;
 
@@ -80,69 +82,12 @@ String currentLampState = "off";
 #define ServerPort 80
 AsyncWebServer webserver(ServerPort);
 
-const char *PARAM_INT1 = "inputIntR";
-const char *PARAM_INT2 = "inputIntG";
-const char *PARAM_INT3 = "inputIntB";
-const char *PARAM_INT4 = "inputIntH";
+const char *PARAM_INT1 = "inpR";
+const char *PARAM_INT2 = "inpG";
+const char *PARAM_INT3 = "inpB";
+const char *PARAM_INT4 = "inpH";
 
-/*
-const char index_html[] PROGMEM = R"rawliteral(
-<!DOCTYPE HTML><html><head>
-  <title>ESP Smart Lamp</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta charset="UTF-8">
-  <script>
-    function update() {
-      setTimeout(function(){ document.location.reload(false); }, 500);
-    }
-  </script>
-  <style>
-  body {
-    font-family: 'Courier New', monospace;
-    background-color: #233a77;
-    color: #fff;
-  }
-  .wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  .wrapper .slider {
-    color: #fff;
-  }
-  </style></head><body>
-  <div class="wrapper">
-  <h1>ESP - Smart Lamp</h1>
-  <form action="/get" target="hidden-form">
-    Rot (Wert: %inputIntR%): <input type="range" name="inputIntR" min="0" max="255" value="%inputIntR%" class="slider" onchange="this.form.submit();update();"/>
-  </form>
-  <form action="/get" target="hidden-form">
-    Grün (Wert: %inputIntG%): <input type="range" name="inputIntG" min="0" max="255" value="%inputIntG%" class="slider" onchange="this.form.submit();update();"/>
-  </form>
-  <form action="/get" target="hidden-form">
-    Blau (Wert: %inputIntB%): <input type="range" name="inputIntB" min="0" max="255" value="%inputIntB%" class="slider" onchange="this.form.submit();update();"/>
-  </form>
-  <form action="/get" target="hidden-form">
-    Helligkeit (Wert: %inputIntH%): <input type="range" name="inputIntH" min="0" max="255" value="%inputIntH%" class="slider" onchange="this.form.submit();update();"/>
-  </form>
-  <details>
-  <summary style="justify-content: space-between"><p>WLAN Einstellungen:</p> <button onclick="this.details.disable=true"></summary>
-  <form action="/get" target="hidden-form">
-    SSID: <input type="text" name="input1">
-    <input type="submit" value="Submit">
-  </form>
-  <form action="/get" target="hidden-form">
-    Passwort: <input type="text" name="input1">
-    <input type="submit" value="Submit">
-  </form>
-  </details>
-  <h3>Developed by Linus H. Kroog</h3>
-  <iframe style="display:none" name="hidden-form"></iframe>
-  </div>
-</body></html>)rawliteral";
-*/
-
-const char index_html[] PROGMEM = R"rawliteral(<!DOCTYPE HTML><html><head><title>ESPSmartLamp</title><meta name="viewport" content="width=device-width,initial-scale=1"><meta charset="UTF-8"><script>function update(){setTimeout(function(){document.location.reload(false);},500)}</script><style>body{font-family:'CourierNew',monospace;background-color:#233a77;color:#fff}.wrapper{display:flex;flex-direction:column;align-items:center}details summary{font-size:1.5rem;font-weight:bold;margin:10px;}</style></head><body><div class="wrapper"><h1>SmartLamp</h1><form action="/get" target="hidden-form">Rot(Wert: %inputIntR%):<input type="range" name="inputIntR" min="0" max="255" value="%inputIntR%" class="slider" onchange="this.form.submit();update()"></form><form action="/get" target="hidden-form">Grün(Wert: %inputIntG%):<input type="range" name="inputIntG" min="0" max="255" value="%inputIntG%" class="slider" onchange="this.form.submit();update()"></form><form action="/get" target="hidden-form">Blau(Wert: %inputIntB%):<input type="range" name="inputIntB" min="0" max="255" value="%inputIntB%" class="slider" onchange="this.form.submit();update()"></form><form action="/get" target="hidden-form">Helligkeit(Wert: %inputIntH%):<input type="range" name="inputIntH" min="0" max="255" value="%inputIntH%" class="slider" onchange="this.form.submit();update()"></form><details style="margin-top:4rem"><summary>Einstellungen:</summary><h2>WLAN:</h2><form action="/get" target="hidden-form">SSID:<input type="text" name="input1"><input type="submit"value="Save"></form><form action="/get" target="hidden-form">Passwort:<input type="text" name="input1"><input type="submit" value="Save"></form><h2>Mqtt:</h2><form action="/get" target="hidden-form">BrokerIP:<input type="text" name="input1"><input type="submit" value="Save"></form><form action="/get" target="hidden-form">Username:<input type="text" name="input1"><input type="submit" value="Save"></form><form action="/get" target="hidden-form">Passwort:<input type="text" name="input1"><input type="submit" value="Save"></form></details><hr width="90%" style="color:#fff;margin:1rem"><h3 style="margin:0">Developed by Linus H. Kroog</h3><hr width="80%" style="color:#fff;margin:1rem"><iframe style="display:none" name="hidden-form"></iframe></div></body></html>)rawliteral";
+const char index_html[] PROGMEM = R"rawliteral(<!DOCTYPE HTML><html><head><title>Smart Lamp</title><meta name="viewport" content="width=device-width, initial-scale=1"><meta charset="UTF-8"><link rel="stylesheet" type="text/css" href="https://lhenryk.github.io/smart-lamp-assets/css/smart-lamp_web-style.css"/><script src="https://lhenryk.github.io/smart-lamp-assets/js/smart-lamp_web-script.js"></script></head><body><div class="wrapper"><h1 class="title">Smart Lamp</h1><h1>%inpName%</h1><hr class="p30"><h2>Color Mix</h2><div class="con ver"><div class="box"><form action="/get" target="hidden-form"><div class="con">Red:<input type="range" name="inpR" min="0" max="255" value="%inpR%" class="slider" onchange="this.form.submit();update()">%inpR%</div></form></div><div class="box"><form action="/get" target="hidden-form"><div class="con">Green:<input type="range" name="inpG" min="0" max="255" value="%inpG%" class="slider"onchange="this.form.submit();update()">%inpG%</div></form></div><div class="box"><form action="/get" target="hidden-form"><div class="con">Blue:<input type="range" name="inpB" min="0" max="255" value="%inpB%" class="slider" onchange="this.form.submit();update()">%inpB%</div></form></div><div class="box"><form action="/get" target="hidden-form"><div class="con">Brightness:<input type="range" name="inpH" min="0" max="255" value="%inpH%" class="slider" onchange="this.form.submit();update()">%inpH%</div></form></div></div><hr class="p45"><h2>LED Mode:</h2><form action="/get" target="hidden-form"><select class="inp" name="selM" id="selM" onchange="this.form.submit();update()"><option value="color">Color</option><option value="mqtt">MQTT</option><option value="party">Party</option><option value="anim">Animations</option></select></form><a class="btn" href="settings.html">Settings</a><hr class="p70"><h4 style="margin: 0">Smart Lamp</h4><h4 style="margin: 0">Developed by Linus H. Kroog</h4><hr class="p60"></div><iframe style="display:none" name="hidden-form"></iframe></body></html>)rawliteral";
 
 //
 // SECTION: -- Graphic Varables --
@@ -226,7 +171,7 @@ String readFile(fs::FS &fs, const char *path)
     fileContent += String((char)file.read());
   }
   file.close();
-  Serial.println(fileContent);
+  // Serial.println(fileContent);
   return fileContent;
 }
 
@@ -253,21 +198,21 @@ void writeFile(fs::FS &fs, const char *path, const char *message)
 String processor(const String &var)
 {
   // Serial.println(var);
-  if (var == "inputIntR")
+  if (var == "inpR")
   {
-    return readFile(SPIFFS, "/inputIntR.txt");
+    return readFile(SPIFFS, "/inpR.txt");
   }
-  else if (var == "inputIntG")
+  else if (var == "inpG")
   {
-    return readFile(SPIFFS, "/inputIntG.txt");
+    return readFile(SPIFFS, "/inpG.txt");
   }
-  else if (var == "inputIntB")
+  else if (var == "inpB")
   {
-    return readFile(SPIFFS, "/inputIntB.txt");
+    return readFile(SPIFFS, "/inpB.txt");
   }
-  else if (var == "inputIntH")
+  else if (var == "inpH")
   {
-    return readFile(SPIFFS, "/inputIntH.txt");
+    return readFile(SPIFFS, "/inpH.txt");
   }
   return String();
 }

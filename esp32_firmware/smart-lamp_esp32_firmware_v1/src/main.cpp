@@ -1,14 +1,15 @@
 /*
+ * Smart Lamp - project
+ *
  * Author: Linus H. Kroog
  * E-Mail: linus.henry.kroog@bbs-winsen.de
  *
  * File name: main.cpp
  *
- * //TODO: List:
+ * //TODO: Feature List:
  * //TODO: -> Add animation profile functions
  * //TODO: -> Add MQTT integration with or without SSL certification auth.
  * //TODO: -> Add OTA for doing updates much more simpler
- * //TODO:
  */
 
 #include <main.h>
@@ -22,7 +23,7 @@ void setup()
   // Initalise RotaryEncoder
   pinMode(rotaryButtonPin, INPUT); // Hier wird der Interrupt installiert.
 
-  attachInterrupt(digitalPinToInterrupt(rotaryButtonPin), rotaryEncoderButtonStateHandler, CHANGE); // Sobald sich der Status (CHANGE) des Interrupt Pins (SW = D2) ändern, soll der Interrupt Befehl (onInterrupt)ausgeführt werden.
+  // attachInterrupt(digitalPinToInterrupt(rotaryButtonPin), rotaryEncoderButtonStateHandler, CHANGE); // Sobald sich der Status (CHANGE) des Interrupt Pins (SW = D2) ändern, soll der Interrupt Befehl (onInterrupt)ausgeführt werden.
 
   // Initalise neopixel communication
   Serial.print("SETUP: Neopixels ...");
@@ -321,12 +322,11 @@ void loop()
       }
     }
     altePosition = neuePosition;
-    // Serial.println(neuePosition); // ...soll die aktuelle Position im seriellen Monitor ausgegeben werden.
+    Serial.println(neuePosition); // ...soll die aktuelle Position im seriellen Monitor ausgegeben werden.
   }
-
-  webserverLoop();
-
   // checkRotaryEncoderStates();
+
+  // webserverLoop();
 
   showLampColor(currentRChannel, currentGChannel, currentBChannel, currentBrightness);
 
@@ -485,24 +485,24 @@ void clientGetRequestHandler(AsyncWebServerRequest *request)
   if (request->hasParam(PARAM_INT1))
   {
     inputMessage = request->getParam(PARAM_INT1)->value();
-    writeFile(SPIFFS, "/inputIntR.txt", inputMessage.c_str());
+    writeFile(SPIFFS, "/inpR.txt", inputMessage.c_str());
   }
   // GET inputInt value on <ESP_IP>/get?inputInt=<inputMessage>
   else if (request->hasParam(PARAM_INT2))
   {
     inputMessage = request->getParam(PARAM_INT2)->value();
-    writeFile(SPIFFS, "/inputIntG.txt", inputMessage.c_str());
+    writeFile(SPIFFS, "/inpG.txt", inputMessage.c_str());
   }
   // GET inputFloat value on <ESP_IP>/get?inputFloat=<inputMessage>
   else if (request->hasParam(PARAM_INT3))
   {
     inputMessage = request->getParam(PARAM_INT3)->value();
-    writeFile(SPIFFS, "/inputIntB.txt", inputMessage.c_str());
+    writeFile(SPIFFS, "/inpB.txt", inputMessage.c_str());
   }
   else if (request->hasParam(PARAM_INT4))
   {
     inputMessage = request->getParam(PARAM_INT4)->value();
-    writeFile(SPIFFS, "/inputIntH.txt", inputMessage.c_str());
+    writeFile(SPIFFS, "/inpH.txt", inputMessage.c_str());
   }
   else
   {
@@ -515,22 +515,22 @@ void clientGetRequestHandler(AsyncWebServerRequest *request)
 void webserverLoop()
 {
   // To access your stored values on inputString, inputInt, inputFloat
-  int inputR = readFile(SPIFFS, "/inputIntR.txt").toInt();
+  int inputR = readFile(SPIFFS, "/inpR.txt").toInt();
   // Serial.print("*** Your InputR: ");
   // Serial.println(inputR);
   currentRChannel = inputR;
 
-  int inputG = readFile(SPIFFS, "/inputIntG.txt").toInt();
+  int inputG = readFile(SPIFFS, "/inpG.txt").toInt();
   // Serial.print("*** Your InputG: ");
   // Serial.println(inputG);
   currentGChannel = inputG;
 
-  int inputB = readFile(SPIFFS, "/inputIntB.txt").toInt();
+  int inputB = readFile(SPIFFS, "/inpB.txt").toInt();
   // Serial.print("*** Your InputB: ");
   // Serial.println(inputB);
   currentBChannel = inputB;
 
-  int inputH = readFile(SPIFFS, "/inputIntH.txt").toInt();
+  int inputH = readFile(SPIFFS, "/inpH.txt").toInt();
   // Serial.print("*** Your InputH: ");
   // Serial.println(inputH);
   currentBrightness = inputH;
