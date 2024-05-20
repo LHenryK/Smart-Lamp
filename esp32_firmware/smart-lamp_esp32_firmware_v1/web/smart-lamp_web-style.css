@@ -24,6 +24,23 @@ hr {
     margin: 1rem;
 }
 
+hr.p30 {
+    width: 30%;
+}
+
+hr.p45 {
+    width: 45%;
+}
+
+hr.p70 {
+    width: 70%;
+}
+
+hr.p60 {
+    width: 60%;
+    margin-bottom: 8rem;
+}
+
 h1 {
     margin: 0.5rem;
 }

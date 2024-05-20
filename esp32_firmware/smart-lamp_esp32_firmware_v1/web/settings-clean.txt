@@ -5,8 +5,9 @@
     <title>Smart Lamp</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="UTF-8">
-    <link rel="stylesheet" type="text/css" href="./smart-lamp_web-style.css" />
-    <script src="./smart-lamp_web-script.js"></script>
+    <link rel="stylesheet" type="text/css"
+        href="https://lhenryk.github.io/smart-lamp-assets/css/smart-lamp_web-style.css" />
+    <script src="https://lhenryk.github.io/smart-lamp-assets/js/smart-lamp_web-script.js"></script>
 </head>
 
 <body>
