@@ -1,0 +1,155 @@
+<!--
+ * Smart Lamp - project
+ *
+ * Author: Linus H. Kroog
+ * E-Mail: linus.henry.kroog@bbs-winsen.de
+ *
+ * File name: noconnection.html
+-->
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <title>Smart Lamp</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <script>
+        function update()
+        {
+            setTimeout(function () { document.location.reload(false); }, 500);
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            color: #fff;
+            font-weight: bold;
+            background-color: #233a77;
+        }
+
+        div {
+            margin: 5px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        input[type=range] {
+            writing-mode: vertical-lr;
+            direction: rtl;
+            vertical-align: middle;
+        }
+
+        input[type=submit] {
+            cursor: pointer;
+        }
+
+        hr {
+            color: #fff;
+            margin: 1rem;
+        }
+
+        hr.p70 {
+            width: 70%;
+        }
+
+        hr.p60 {
+            width: 60%;
+            margin-bottom: 8rem;
+        }
+
+        h1 {
+            margin: 0.5rem;
+        }
+
+        .title {
+            margin-bottom: 2.5rem;
+            font-size: 2.5rem;
+        }
+
+        .wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .box {
+            margin: 0.5rem;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #2a3869;
+            border: 2px solid #fff;
+            border-radius: 5px;
+        }
+
+
+        .btn {
+            margin: 15px;
+            padding: 0.75rem 0.5rem;
+            color: #fff;
+            background: #2a3869;
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: 2px solid #fff;
+            border-radius: 5px;
+        }
+
+        .btn:hover {
+            color: #233a77;
+            background: white;
+            transition: 0.5s;
+        }
+
+        .red {
+            background: #dc3545;
+        }
+
+        .inp {
+            margin: 5px;
+            padding: 5px;
+            color: #fff;
+            background: none;
+            border: 1px solid #fff;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <h1 class="title">Smart Lamp</h1>
+        <div class="red">
+            Your lamp is currently not connected to the Internet. <br>
+            Therefore, you should enter the network name and <br>
+            network password of your WiFi below and then restart <br>
+            Smart Lamp by clicking on the "Restart" button.
+        </div>
+        <h2>WLAN:</h2>
+        <div class="box">
+            <form action="/get" target="hidden-form">
+                SSID:
+                <div>
+                    <input class="inp" type="text" name="%inpWID%" value="%inpWID%">
+                    <input class="inp" type="submit" value="Save" onclick="update()">
+                </div>
+            </form>
+            <form action="/get" target="hidden-form">
+                Passwort:
+                <div>
+                    <input class="inp" type="text" name="%inpWPa%">
+                    <input class="inp" type="submit" value="Save" onclick="update()">
+                </div>
+            </form>
+        </div>
+        <a class="btn red" href="/restart">Restart</a>
+        <hr class="p70">
+        <h3 style="margin: 0">Smart Lamp</h3>
+        <h4 style="margin: 0">Developed by Linus H. Kroog</h4>
+        <hr class="p60">
+    </div>
+    <iframe style="display:none" name="hidden-form"></iframe>
+</body>
+
+</html>

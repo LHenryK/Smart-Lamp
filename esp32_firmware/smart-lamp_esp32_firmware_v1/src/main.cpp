@@ -30,29 +30,111 @@ void setup()
   Serial.println(" OK!");
   Serial.println();
 
+  Serial.print("SETUP: SPIFFS ...");
   if (!SPIFFS.begin(true))
   {
+    Serial.println();
     Serial.println("An Error has occurred while mounting SPIFFS");
     return;
   }
+  else
+  {
+    Serial.println(" OK");
+    Serial.println();
+  }
+
+  // Preload temporary varables
+  Serial.print("Preload temp varables ...");
+
+  String tempVarInpName = readFile(SPIFFS, "/inpName.txt");
+
+  String tempVarInpR = readFile(SPIFFS, "/inpR.txt");
+  String tempVarInpG = readFile(SPIFFS, "/inpG.txt");
+  String tempVarInpB = readFile(SPIFFS, "/inpB.txt");
+  String tempVarInpH = readFile(SPIFFS, "/inpH.txt");
+
+  String tempVarSelM = readFile(SPIFFS, "/selM.txt");
+
+  String tempVarConSta = readFile(SPIFFS, "/conSta.txt");
+  String tempVarInpWID = readFile(SPIFFS, "/inpWID.txt");
+  String tempVarInpWPa = readFile(SPIFFS, "/inpWPa.txt");
+  String tempVarInpBIP = readFile(SPIFFS, "/inpBIP.txt");
+  String tempVarInpBUs = readFile(SPIFFS, "/inpBUs.txt");
+  String tempVarInpBPa = readFile(SPIFFS, "/inpBPa.txt");
+
+  Serial.println(" OK");
+  Serial.println();
 
   // Initalise Wi-Fi network communication
   Serial.println("SETUP: Network Connection:");
-  Serial.print(" -> Start AP Mode ");
 
-  WiFi.softAP(apWifiSsid, "");
+  // TODO: Check if there are any wifi network credentials available!!!
+  // TODO: if there are any, try to connect to network (at least 5 times)
+  // TODO: if not or in case of non successfull connection start AP Mode.
 
-  Serial.println(" OK!");
+  // Check if network credentials are available
+  if (tempVarInpWID != "" && tempVarInpWPa != "")
+  {
+    // Credentials are available!!!
+    // Try to connect to network (at least 5 times)
+    int connAttems = 0;
 
-  IPAddress IP = WiFi.softAPIP();
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(tempVarInpWID, tempVarInpWPa);
+    Serial.print(" -> Connecting to WiFi: ");
+    Serial.print(tempVarInpWID);
+    Serial.print(", with password: ");
+    Serial.println(tempVarInpWPa);
 
-  Serial.print(" -> AP IP: ");
-  Serial.println(IP);
+    while (connAttems < 15)
+    {
+      if (WiFi.status() == WL_CONNECTED)
+      {
+        apMode = false;
+        break;
+      }
+      else
+      {
+        connAttems += 1;
+        Serial.print(" -> ");
+        Serial.print(connAttems);
+        Serial.println("ed attemt fail");
+      }
+      delay(2000);
+    }
+
+    if (apMode)
+    {
+      Serial.println(" -> Failed to connect to Network");
+      Serial.println();
+      WiFi.disconnect();
+    }
+  }
+
+  if (apMode)
+  {
+    Serial.print(" -> Start AP Mode ");
+
+    WiFi.mode(WIFI_AP_STA);
+    WiFi.softAP(apWifiSsid, "");
+
+    Serial.println(" OK!");
+
+    IPAddress IP = WiFi.softAPIP();
+
+    Serial.print(" -> AP IP: ");
+    Serial.println(IP);
+  }
+  else
+  {
+    Serial.print(" -> Network IP: ");
+    Serial.println(WiFi.localIP());
+  }
 
   // Initalise mDNS Service:
   Serial.print(" -> Start mDNS ");
   if (!MDNS.begin("smart-lamp"))
-  { // Set the hostname to "esp32.local"
+  {
     Serial.println("Error setting up MDNS responder!");
     while (1)
     {
@@ -60,6 +142,7 @@ void setup()
       delay(500);
     }
   }
+
   Serial.println(" OK!");
 
   Serial.println();
@@ -68,7 +151,7 @@ void setup()
 
   Serial.print(" -> Starting ");
   setupWebserver();
-  Serial.print(" OK");
+  Serial.println(" OK");
 
   Serial.print(" -> Port: ");
   Serial.println(ServerPort);
@@ -154,6 +237,7 @@ void checkCurrentLEDMode()
 
 // SECTION: -- Rotary Encoder --
 
+// TODO: Update RGB-H temp and stored values when changing!!!
 void checkRotaryEncoderStates()
 {
   encoder.tick();
@@ -239,6 +323,7 @@ void notFound(AsyncWebServerRequest *request)
 
 void setupWebserver()
 {
+  webserver.reset();
   // Set Webserver Responses to Client request:
   webserver.on("/", HTTP_GET, clientIndexRequestHandler);
   Serial.print(".");
@@ -252,35 +337,107 @@ void setupWebserver()
 
 void clientIndexRequestHandler(AsyncWebServerRequest *request)
 {
-  request->send_P(200, "text/html", index_html, processor);
+  if (apMode)
+  {
+    request->send_P(200, "text/html", nocon_html, processRequest);
+  }
+  else
+  {
+    request->send_P(200, "text/html", index_html, processRequest);
+  }
 }
 
 void clientGetRequestHandler(AsyncWebServerRequest *request)
 {
   String inputMessage;
   // GET inputString value on <ESP_IP>/get?inputString=<inputMessage>
+
+  // Name:
   if (request->hasParam(PARAM_INT1))
   {
     inputMessage = request->getParam(PARAM_INT1)->value();
-    writeFile(SPIFFS, "/inpR.txt", inputMessage.c_str());
+    writeFile(SPIFFS, "/inpName.txt", inputMessage.c_str());
+    tempVarInpName = inputMessage;
   }
-  // GET inputInt value on <ESP_IP>/get?inputInt=<inputMessage>
+
+  // RGB-H values:
   else if (request->hasParam(PARAM_INT2))
   {
     inputMessage = request->getParam(PARAM_INT2)->value();
-    writeFile(SPIFFS, "/inpG.txt", inputMessage.c_str());
+    writeFile(SPIFFS, "/inpR.txt", inputMessage.c_str());
+    tempVarInpR = inputMessage;
   }
-  // GET inputFloat value on <ESP_IP>/get?inputFloat=<inputMessage>
   else if (request->hasParam(PARAM_INT3))
   {
     inputMessage = request->getParam(PARAM_INT3)->value();
-    writeFile(SPIFFS, "/inpB.txt", inputMessage.c_str());
+    writeFile(SPIFFS, "/inpG.txt", inputMessage.c_str());
+    tempVarInpG = inputMessage;
   }
   else if (request->hasParam(PARAM_INT4))
   {
     inputMessage = request->getParam(PARAM_INT4)->value();
-    writeFile(SPIFFS, "/inpH.txt", inputMessage.c_str());
+    writeFile(SPIFFS, "/inpB.txt", inputMessage.c_str());
+    tempVarInpB = inputMessage;
   }
+  else if (request->hasParam(PARAM_INT5))
+  {
+    inputMessage = request->getParam(PARAM_INT5)->value();
+    writeFile(SPIFFS, "/inpH.txt", inputMessage.c_str());
+    tempVarInpH = inputMessage;
+    currentBrightness = inputMessage.toInt();
+  }
+
+  // Lamp Mode:
+  else if (request->hasParam(PARAM_INT6))
+  {
+    inputMessage = request->getParam(PARAM_INT6)->value();
+    writeFile(SPIFFS, "/selM.txt", inputMessage.c_str());
+    tempVarSelM = inputMessage;
+  }
+
+  // Connection Status:
+  else if (request->hasParam(PARAM_INT7))
+  {
+    inputMessage = request->getParam(PARAM_INT7)->value();
+    writeFile(SPIFFS, "/conSta.txt", inputMessage.c_str());
+    tempVarConSta = inputMessage;
+  }
+
+  // Wifi:
+  else if (request->hasParam(PARAM_INT8))
+  {
+    inputMessage = request->getParam(PARAM_INT8)->value();
+    writeFile(SPIFFS, "/inpWID.txt", inputMessage.c_str());
+    tempVarInpWID = inputMessage;
+  }
+  else if (request->hasParam(PARAM_INT9))
+  {
+    inputMessage = request->getParam(PARAM_INT9)->value();
+    writeFile(SPIFFS, "/inpWPa.txt", inputMessage.c_str());
+    tempVarInpWPa = inputMessage;
+  }
+
+  // MQTT Broker:
+  else if (request->hasParam(PARAM_INT10))
+  {
+    inputMessage = request->getParam(PARAM_INT10)->value();
+    writeFile(SPIFFS, "/inpBIP.txt", inputMessage.c_str());
+    tempVarInpBIP = inputMessage;
+  }
+  else if (request->hasParam(PARAM_INT11))
+  {
+    inputMessage = request->getParam(PARAM_INT11)->value();
+    writeFile(SPIFFS, "/inpBUs.txt", inputMessage.c_str());
+    tempVarInpBUs = inputMessage;
+  }
+  else if (request->hasParam(PARAM_INT12))
+  {
+    inputMessage = request->getParam(PARAM_INT12)->value();
+    writeFile(SPIFFS, "/inpBPa.txt", inputMessage.c_str());
+    tempVarInpBPa = inputMessage;
+  }
+
+  // No Message:
   else
   {
     inputMessage = "No message sent";
@@ -292,28 +449,26 @@ void clientGetRequestHandler(AsyncWebServerRequest *request)
 void webserverLoop()
 {
   // To access your stored values on inputString, inputInt, inputFloat
-  int inputR = readFile(SPIFFS, "/inpR.txt").toInt();
+  int inputR = tempVarInpR.toInt();
   // Serial.print("*** Your InputR: ");
   // Serial.println(inputR);
   currentRChannel = inputR;
 
-  int inputG = readFile(SPIFFS, "/inpG.txt").toInt();
+  int inputG = tempVarInpG.toInt();
   // Serial.print("*** Your InputG: ");
   // Serial.println(inputG);
   currentGChannel = inputG;
 
-  int inputB = readFile(SPIFFS, "/inpB.txt").toInt();
+  int inputB = tempVarInpB.toInt();
   // Serial.print("*** Your InputB: ");
   // Serial.println(inputB);
   currentBChannel = inputB;
 
-  int inputH = readFile(SPIFFS, "/inpH.txt").toInt();
+  // int inputH = tempVarInpH.toInt();
   // Serial.print("*** Your InputH: ");
   // Serial.println(inputH);
-  currentBrightness = inputH;
+  // currentBrightness = inputH;
 }
-
-// TODO: Webserver Request Handler:
 
 //
 //
