@@ -23,6 +23,8 @@ void setup()
   // Initalise RotaryEncoder
   pinMode(rotaryButtonPin, INPUT); // Hier wird der Interrupt installiert.
 
+  // attachInterrupt(digitalPinToInterrupt(rotaryButtonPin), rotaryEncoderButtonStateHandler, CHANGE); // Sobald sich der Status (CHANGE) des Interrupt Pins (SW = D2) ändern, soll der Interrupt Befehl (onInterrupt)ausgeführt werden.
+
   // Initalise neopixel communication
   Serial.print("SETUP: Neopixels ...");
   pixels.begin();
@@ -75,14 +77,48 @@ void setup()
 
   Serial.println();
 
+  // Further setup routine:
+
+  // Test LED Setup:
+
+  /*
+  for (int m = 0; m < 6; m++)
+  {
+    for (int n = 0; n < 12; n++)
+    {
+      setSegmentLed(m, n, 255, 0, 0);
+      pixels.show();
+      delay(500);
+    }
+  }
+  */
+
   // LED Setup:
-  color[0] = 255;
-  color[1] = 255;
-  color[2] = 255;
+  color[0] = 0;
+  color[1] = 0;
+  color[2] = 0;
 
   for (int i = 0; i < 6; i++)
   {
-    for (int j = 0; j < 7; j++)
+    if (i % 2 == 0)
+    {
+      color[0] = 0;
+      color[1] = 0;
+      color[2] = 0;
+    }
+    // else if (i % 3 == 0)
+    // {
+    //   color[0] = 0;
+    //   color[1] = 255;
+    //   color[2] = 0;
+    // }
+    // else
+    // {
+    //   color[0] = 0;
+    //   color[1] = 0;
+    //   color[2] = 255;
+    // }
+    for (int j = 0; j < 12; j++)
     {
       pixelHidBuffer[i][j][0] = color[0];
       pixelHidBuffer[i][j][1] = color[1];
@@ -96,22 +132,200 @@ void setup()
 
   showLedMatrix();
 
-  delay(500);
+  // Experemental
+
+  for (int h = 6; h >= 0; h--)
+  {
+    for (int m = 0; m < 7; m++)
+    {
+      shiftRowLeft(m, 1);
+    }
+
+    pixelHidBuffer[0][h][0] = 50;
+    pixelHidBuffer[0][h][1] = 50;
+    pixelHidBuffer[0][h][2] = 255;
+
+    copyPixelBufferInOut();
+    showLedMatrix();
+    delay(500);
+  }
 }
 
 void loop()
 {
   // checkClientConnection();
+  //  put your main code here, to run repeatedly:
+  //  for (int i = 0; i < PixelNum; i++)
+  //  {
+  //    pixels.setPixelColor(i, 255, 255, 255);
+  //    pixels.show();
+  //    delay(100);
+  //  }
+
+  // for (int l = 0; l <= currentLed; l++)
+  // {
+  //   setSegmentLed(currentSeg, l, 255, 0, 0);
+  //   pixels.show();
+  //   delay(100);
+  // }
+
+  // currentSeg++;
+  // currentLed++;
+
+  // if (currentSeg >= 6)
+  // {
+  //   currentSeg = 0;
+  // }
+
+  // if (currentLed >= pixelSegmentLength)
+  // {
+  //   currentLed = 0;
+  // }
+
+  // int color[] = {255, 0, 255};
+
+  /*
+  updateSegment();
+  pixels.clear();
+  delay(500);
+  */
+
+  // for (int k = 0; k < 12; k++)
+  // {
+  //   shiftRowLeft(k, 1);
+  //   copyPixelBufferInHid();
+  // }
+
+  // showLedMatrix();
+  // delay(250);
+  // pixels.clear();
+  // pixels.show();
+  // delay(150);
+  // showLedMatrix();
+  // delay(250);
+  // pixels.clear();
+  // pixels.show();
+  // delay(150);
+
+  // EXPERIMENTAL !!!!!
+  /*
+    // LED Setup:
+    color[0] = 0;
+    color[1] = 0;
+    color[2] = 0;
+
+    for (int i = 0; i < 6; i++)
+    {
+      if (i % 2 == 0)
+      {
+        color[0] = 255;
+        color[1] = 0;
+        color[2] = 0;
+      }
+      // else if (i % 3 == 0)
+      // {
+      //   color[0] = 0;
+      //   color[1] = 255;
+      //   color[2] = 0;
+      // }
+      else
+      {
+        color[0] = 0;
+        color[1] = 0;
+        color[2] = 0;
+      }
+      for (int j = 0; j < 12; j++)
+      {
+        pixelHidBuffer[i][j][0] = color[0];
+        pixelHidBuffer[i][j][1] = color[1];
+        pixelHidBuffer[i][j][2] = color[2];
+      }
+    }
+
+    copyPixelBufferInOut();
+
+    showLedMatrix();
+    delay(200);
+    pixels.clear();
+    pixels.show();
+    delay(100);
+
+    showLedMatrix();
+    delay(200);
+    pixels.clear();
+    pixels.show();
+    delay(100);
+
+    // LED Setup:
+    color[0] = 0;
+    color[1] = 0;
+    color[2] = 0;
+
+    for (int i = 0; i < 6; i++)
+    {
+      if (i % 2 == 0)
+      {
+        color[0] = 0;
+        color[1] = 0;
+        color[2] = 0;
+      }
+      // else if (i % 3 == 0)
+      // {
+      //   color[0] = 0;
+      //   color[1] = 255;
+      //   color[2] = 0;
+      // }
+      else
+      {
+        color[0] = 0;
+        color[1] = 0;
+        color[2] = 255;
+      }
+      for (int j = 0; j < 12; j++)
+      {
+        pixelHidBuffer[i][j][0] = color[0];
+        pixelHidBuffer[i][j][1] = color[1];
+        pixelHidBuffer[i][j][2] = color[2];
+      }
+    }
+
+    copyPixelBufferInOut();
+
+    showLedMatrix();
+    delay(200);
+    pixels.clear();
+    pixels.show();
+    delay(100);
+
+    showLedMatrix();
+    delay(200);
+    pixels.clear();
+    pixels.show();
+    delay(100);
+
+  */
+
+  for (int m = 0; m < 7; m++)
+  {
+    shiftRowLeft(m, 1);
+  }
+
+  showLedMatrix();
+
+  delay(100);
+
+  // EXPERIMENTAL END !!!!!
+
+  // checkRotaryEncoderStates();
+
+  // webserverLoop();
+
+  // pixels.setBrightness(currentBrightness);
+  // showLampColor(currentRChannel, currentGChannel, currentBChannel, currentBrightness);
 
   // checkCurrentLEDMode();
 
-  // TODO: Put the following lines in to the checkCurrentLEDMode function.
-  checkRotaryEncoderStates();
-
-  webserverLoop();
-
-  pixels.setBrightness(currentBrightness);
-  showLampColor(currentRChannel, currentGChannel, currentBChannel, currentBrightness);
+  // showLedMatrix();
 }
 
 // SECTION: --- Functions: ---
@@ -347,7 +561,7 @@ void copyPixelBufferInHid()
   }
 }
 
-void shiftRowRight(int rowIndex, int coloumShifts)
+void shiftRowLeft(int rowIndex, int coloumShifts)
 {
   for (int i = coloumShifts; i < 6; i++)
   {
@@ -367,22 +581,22 @@ void shiftRowRight(int rowIndex, int coloumShifts)
 
 // TODO: Implement function that shifts right!
 
-void shiftRowLeft(int rowIndex, int coloumShifts)
-{
-  for (int i = 5 - coloumShifts; i >= 0; i--)
-  {
-    pixelOutBuffer[i][rowIndex][0] = pixelHidBuffer[i + coloumShifts][rowIndex][0];
-    pixelOutBuffer[i][rowIndex][1] = pixelHidBuffer[i + coloumShifts][rowIndex][1];
-    pixelOutBuffer[i][rowIndex][2] = pixelHidBuffer[i + coloumShifts][rowIndex][2];
-  }
-  for (int j = 5; j > 5 - coloumShifts; j--)
-  {
-    pixelOutBuffer[j][rowIndex][0] = pixelHidBuffer[5 - j][rowIndex][0];
-    pixelOutBuffer[j][rowIndex][1] = pixelHidBuffer[5 - j][rowIndex][1];
-    pixelOutBuffer[j][rowIndex][2] = pixelHidBuffer[5 - j][rowIndex][2];
-  }
-  copyPixelBufferInHid();
-}
+// void shiftRowRight(int rowIndex, int coloumShifts)
+// {
+//   for (int i = coloumShifts; i > 0; i--)
+//   {
+//     pixelOutBuffer[i][rowIndex][0] = pixelHidBuffer[i + coloumShifts][rowIndex][0];
+//     pixelOutBuffer[i][rowIndex][1] = pixelHidBuffer[i + coloumShifts][rowIndex][1];
+//     pixelOutBuffer[i][rowIndex][2] = pixelHidBuffer[i + coloumShifts][rowIndex][2];
+//   }
+//   for (int j = 6; j > coloumShifts; j--)
+//   {
+//     pixelOutBuffer[j][rowIndex][0] = pixelHidBuffer[6 - coloumShifts + j][rowIndex][0];
+//     pixelOutBuffer[j][rowIndex][1] = pixelHidBuffer[6 - coloumShifts + j][rowIndex][1];
+//     pixelOutBuffer[j][rowIndex][2] = pixelHidBuffer[6 - coloumShifts + j][rowIndex][2];
+//   }
+//   copyPixelBufferInHid();
+// }
 
 void showLampColor(int r, int g, int b, int brightness)
 {

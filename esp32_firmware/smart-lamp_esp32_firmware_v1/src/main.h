@@ -27,7 +27,7 @@
 
 // SECTION: -- General --
 #define PIN 14
-#define PixelNum 72
+#define PixelNum 42
 
 int rotaryForwardsPin = 2;
 int rotaryBackwardsPin = 4;
@@ -43,9 +43,9 @@ int currentRChannel = 255;
 int currentGChannel = 255;
 int currentBChannel = 255;
 
-int currentBrightness = 0;
+int currentBrightness = 50;
 
-int pixelSegmentLength = 12;
+int pixelSegmentLength = 7;
 
 bool isMenuOpen = false;
 int menuToggleTime = 6000;
@@ -97,8 +97,9 @@ int currentLed = 0;
 int color[3];
 
 // Pixel buffers:
-int pixelHidBuffer[6][12][3];
-int pixelOutBuffer[6][12][3];
+int pixelHidBuffer[6][7][3];
+int pixelOutBuffer[6][7][3];
+int emtyBuffer[6][7][3];
 
 // Create neopixel obj
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(PixelNum, PIN, NEO_GRB + NEO_KHZ800);
@@ -137,6 +138,7 @@ void copyPixelBufferInOut();
 void copyPixelBufferInHid();
 
 // TODO: implementation of shiftRowRight(int rowIndex, int coloumShifts);
+void shiftRowRight(int rowIndex, int coloumShifts);
 void shiftRowLeft(int rowIndex, int coloumShifts);
 
 void showLampColor(int r, int g, int b, int brightness);
