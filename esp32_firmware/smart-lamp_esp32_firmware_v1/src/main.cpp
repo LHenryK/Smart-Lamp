@@ -46,21 +46,21 @@ void setup()
   // Preload temporary varables
   Serial.print("Preload temp varables ...");
 
-  String tempVarInpName = readFile(SPIFFS, "/inpName.txt");
+  tempVarInpName = readFile(SPIFFS, "/inpName.txt");
 
-  String tempVarInpR = readFile(SPIFFS, "/inpR.txt");
-  String tempVarInpG = readFile(SPIFFS, "/inpG.txt");
-  String tempVarInpB = readFile(SPIFFS, "/inpB.txt");
-  String tempVarInpH = readFile(SPIFFS, "/inpH.txt");
+  tempVarInpR = readFile(SPIFFS, "/inpR.txt");
+  tempVarInpG = readFile(SPIFFS, "/inpG.txt");
+  tempVarInpB = readFile(SPIFFS, "/inpB.txt");
+  tempVarInpH = readFile(SPIFFS, "/inpH.txt");
 
-  String tempVarSelM = readFile(SPIFFS, "/selM.txt");
+  tempVarSelM = readFile(SPIFFS, "/selM.txt");
 
-  String tempVarConSta = readFile(SPIFFS, "/conSta.txt");
-  String tempVarInpWID = readFile(SPIFFS, "/inpWID.txt");
-  String tempVarInpWPa = readFile(SPIFFS, "/inpWPa.txt");
-  String tempVarInpBIP = readFile(SPIFFS, "/inpBIP.txt");
-  String tempVarInpBUs = readFile(SPIFFS, "/inpBUs.txt");
-  String tempVarInpBPa = readFile(SPIFFS, "/inpBPa.txt");
+  tempVarConSta = readFile(SPIFFS, "/conSta.txt");
+  tempVarInpWID = readFile(SPIFFS, "/inpWID.txt");
+  tempVarInpWPa = readFile(SPIFFS, "/inpWPa.txt");
+  tempVarInpBIP = readFile(SPIFFS, "/inpBIP.txt");
+  tempVarInpBUs = readFile(SPIFFS, "/inpBUs.txt");
+  tempVarInpBPa = readFile(SPIFFS, "/inpBPa.txt");
 
   Serial.println(" OK");
   Serial.println();
@@ -79,7 +79,9 @@ void setup()
     // Try to connect to network (at least 5 times)
     int connAttems = 0;
 
+    WiFi.setAutoReconnect(true);
     WiFi.mode(WIFI_STA);
+    WiFi.hostname("Smart-Lamp");
     WiFi.begin(tempVarInpWID, tempVarInpWPa);
     Serial.print(" -> Connecting to WiFi: ");
     Serial.print(tempVarInpWID);
@@ -142,6 +144,7 @@ void setup()
       delay(500);
     }
   }
+  MDNS.addService("http", "tcp", 80);
 
   Serial.println(" OK!");
 
@@ -193,8 +196,51 @@ void loop()
 
   webserverLoop();
 
-  pixels.setBrightness(currentBrightness);
-  showLampColor(currentRChannel, currentGChannel, currentBChannel, currentBrightness);
+  if (tempVarSelM == "anim")
+  {
+    if (didLedModeChanged)
+    {
+      didLedModeChanged = false;
+      Serial.println("Running");
+      // Initialise the Animation:
+      for (int i = 0; i < 6; i++)
+      {
+        for (int j = 0; j < 7; j++)
+        {
+          pixelHidBuffer[i][j][0] = 0;
+          pixelHidBuffer[i][j][1] = 0;
+          pixelHidBuffer[i][j][2] = 0;
+        }
+      }
+      pixelHidBuffer[2][6][0] = 0;
+      pixelHidBuffer[2][6][1] = 0;
+      pixelHidBuffer[2][6][2] = 255;
+      copyPixelBufferInOut();
+      showLedMatrix();
+    }
+    else
+    {
+      for (int k = 0; k < 7; k++)
+      {
+        if (random(10) < 5)
+        {
+          shiftRowLeft(k, 1);
+        }
+        else
+        {
+          shiftRowRight(k, 1);
+        }
+      }
+
+      showLedMatrix();
+    }
+    delay(100);
+  }
+  else
+  {
+    pixels.setBrightness(currentBrightness);
+    showLampColor(currentRChannel, currentGChannel, currentBChannel, currentBrightness);
+  }
 }
 
 // SECTION: --- Functions: ---
@@ -247,9 +293,9 @@ void checkRotaryEncoderStates()
   {
     if (altePosition < neuePosition)
     {
-      if (neuePosition <= 51)
+      if (neuePosition <= 255)
       {
-        currentBrightness = 5 * neuePosition;
+        currentBrightness = neuePosition;
         Serial.print("Brightness: ");
         Serial.println(currentBrightness);
       }
@@ -258,12 +304,14 @@ void checkRotaryEncoderStates()
         currentBrightness = 255;
         encoder.setPosition(51);
       }
+      tempVarInpH = String(currentBrightness).c_str();
+      writeFile(SPIFFS, "/inpH.txt", String(currentBrightness).c_str());
     }
     else if (altePosition > neuePosition)
     {
       if (neuePosition >= 0)
       {
-        currentBrightness = 5 * neuePosition;
+        currentBrightness = neuePosition;
         Serial.print("Brightness: ");
         Serial.println(currentBrightness);
       }
@@ -272,6 +320,8 @@ void checkRotaryEncoderStates()
         currentBrightness = 0;
         encoder.setPosition(0);
       }
+      tempVarInpH = String(currentBrightness).c_str();
+      writeFile(SPIFFS, "/inpH.txt", String(currentBrightness).c_str());
     }
     altePosition = neuePosition;
     Serial.println(neuePosition); // ...soll die aktuelle Position im seriellen Monitor ausgegeben werden.
@@ -325,12 +375,22 @@ void setupWebserver()
 {
   webserver.reset();
   // Set Webserver Responses to Client request:
+  // Setup index page:
   webserver.on("/", HTTP_GET, clientIndexRequestHandler);
   Serial.print(".");
+  // Setup setting page:
+  webserver.on("/settings", HTTP_GET, clientSettingsRequestHandler);
+  Serial.print(".");
+  // Setup restarting page:
+  webserver.on("/restart", HTTP_GET, clientRestartRequestHandler);
+  Serial.print(".");
+  // Setup post request handler
   webserver.on("/get", HTTP_GET, clientGetRequestHandler);
   Serial.print(".");
+  // Setup notfound page
   webserver.onNotFound(notFound);
   Serial.print(".");
+  // Start Webserver
   webserver.begin();
   Serial.print(".");
 }
@@ -345,6 +405,25 @@ void clientIndexRequestHandler(AsyncWebServerRequest *request)
   {
     request->send_P(200, "text/html", index_html, processRequest);
   }
+}
+
+void clientSettingsRequestHandler(AsyncWebServerRequest *request)
+{
+  if (!apMode)
+  {
+    request->send_P(200, "text/html", settings_html, processRequest);
+  }
+  else
+  {
+    request->send(404, "text/plain", "Not Found!");
+  }
+}
+
+void clientRestartRequestHandler(AsyncWebServerRequest *request)
+{
+  request->send(200, "text/plain", "Restarting ...");
+  delay(100);
+  ESP.restart();
 }
 
 void clientGetRequestHandler(AsyncWebServerRequest *request)
@@ -384,7 +463,7 @@ void clientGetRequestHandler(AsyncWebServerRequest *request)
     inputMessage = request->getParam(PARAM_INT5)->value();
     writeFile(SPIFFS, "/inpH.txt", inputMessage.c_str());
     tempVarInpH = inputMessage;
-    currentBrightness = inputMessage.toInt();
+    encoder.setPosition(inputMessage.toInt());
   }
 
   // Lamp Mode:
@@ -393,6 +472,7 @@ void clientGetRequestHandler(AsyncWebServerRequest *request)
     inputMessage = request->getParam(PARAM_INT6)->value();
     writeFile(SPIFFS, "/selM.txt", inputMessage.c_str());
     tempVarSelM = inputMessage;
+    didLedModeChanged = true;
   }
 
   // Connection Status:
