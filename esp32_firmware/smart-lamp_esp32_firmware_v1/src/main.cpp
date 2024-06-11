@@ -198,6 +198,7 @@ void loop()
 
   if (tempVarSelM == "anim")
   {
+    pixels.setBrightness(currentBrightness);
     if (didLedModeChanged)
     {
       didLedModeChanged = false;
@@ -222,6 +223,71 @@ void loop()
     {
       for (int k = 0; k < 7; k++)
       {
+        if (animCounter >= 3)
+        {
+          animCounter = 0;
+        }
+
+        for (int m = 0; m < 6; m++)
+        {
+          if (random(10) < 3)
+          {
+            switch (animCounter)
+            {
+            case 0:
+              pixelHidBuffer[m][6][0] = 190;
+              pixelHidBuffer[m][6][1] = 255;
+              pixelHidBuffer[m][6][2] = 50;
+              break;
+
+            case 1:
+              pixelHidBuffer[m][6][0] = 50;
+              pixelHidBuffer[m][6][1] = 255;
+              pixelHidBuffer[m][6][2] = 255;
+              break;
+
+            case 2:
+              pixelHidBuffer[m][6][0] = 50;
+              pixelHidBuffer[m][6][1] = 120;
+              pixelHidBuffer[m][6][2] = 255;
+              break;
+
+            default:
+              pixelHidBuffer[m][6][0] = 200;
+              pixelHidBuffer[m][6][1] = 255;
+              pixelHidBuffer[m][6][2] = 50;
+              break;
+            }
+          }
+          else
+          {
+            pixelHidBuffer[m][6][0] = 0;
+            pixelHidBuffer[m][6][1] = 0;
+            pixelHidBuffer[m][6][2] = 0;
+          }
+        }
+        copyPixelBufferInOut();
+        showLedMatrix();
+
+        delay(50);
+
+        // Shift down
+        for (int i = 0; i < 6; i++)
+        {
+          for (int j = 0; j < 7; j++)
+          {
+            pixelHidBuffer[i][j][0] = pixelHidBuffer[i][j + 1][0];
+            pixelHidBuffer[i][j][1] = pixelHidBuffer[i][j + 1][1];
+            pixelHidBuffer[i][j][2] = pixelHidBuffer[i][j + 1][2];
+          }
+        }
+
+        copyPixelBufferInOut();
+        showLedMatrix();
+
+        delay(50);
+
+        // Shift left or right
         if (random(10) < 5)
         {
           shiftRowLeft(k, 1);
@@ -233,8 +299,9 @@ void loop()
       }
 
       showLedMatrix();
+      animCounter++;
     }
-    delay(100);
+    delay(50);
   }
   else
   {

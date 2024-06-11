@@ -53,6 +53,8 @@ bool isMenuOpen = false;
 int menuToggleTime = 6000;
 int currentMenuToggleTime = 0;
 
+int animCounter = 0;
+
 // Temporary varables for saving loaded values out of flash
 String tempVarInpName = "";
 
